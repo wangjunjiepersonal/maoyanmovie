@@ -3,30 +3,22 @@
 		<div class="search_input">
 			<div class="search_input_wrapper">
 				<i class="iconfont icon-sousuo"></i>
-				<input type="text">
+				<input type="text" v-model="message">
 			</div>					
 		</div>
 		<div class="search_result">
 			<h3>电影/电视剧/综艺</h3>
 			<ul>
-				<li>
-					<div class="img"><img src="/images/movie_1.jpg"></div>
+				<li v-for="(item,index) in moviesList" :key="index">
+					<div class="img"><img :src="item.img | setWH('128.180')"></div>
 					<div class="info">
-						<p><span>无名之辈</span><span>8.5</span></p>
-						<p>A Cool Fish</p>
-						<p>剧情,喜剧,犯罪</p>
-						<p>2018-11-16</p>
+						<p><span>{{item.nm}}</span><span>{{item.sc}}</span></p>
+						<p>{{item.enm}}</p>
+						<p>{{item.cat}}</p>
+						<p>{{item.rt}}</p>
 					</div>
 				</li>
-				<li>
-					<div class="img"><img src="/images/movie_1.jpg"></div>
-					<div class="info">
-						<p><span>无名之辈</span><span>8.5</span></p>
-						<p>A Cool Fish</p>
-						<p>剧情,喜剧,犯罪</p>
-						<p>2018-11-16</p>
-					</div>
-				</li>
+
 			</ul>
 		</div>
 	</div>
@@ -34,7 +26,45 @@
 
 <script>
 	export default {
-		name:'search'
+		name:'search',
+		data(){
+			return{
+				message:'',
+				moviesList:[]
+			}
+		},
+		watch:{
+			message(newval){
+				//函数防抖
+				this.cancelRequest()
+				var that = this
+				this.axios.get(`/api/searchList?cityId=10&kw=${newval}`,{
+          cancelToken: new this.axios.CancelToken(function(c){
+              that.source = c;
+          })
+       }).then((res) =>{
+       			let msg = res.data.msg
+            let movies = res.data.data.movies.list
+            if(msg && movies){
+              this.moviesList = movies
+            }
+          }).catch((error) =>{
+            if(this.axios.isCancel(error)){
+              console.log('Request Canceled' , error.msg)  //请求如果取消，这里是返回取消的message
+            }else{
+              console.log(error)
+            }
+          })
+			}
+		},
+		methods:{
+			//axios函数防抖 防止多次请求
+			cancelRequest(){
+        if(typeof this.source ==='function'){
+          this.source('终止请求')
+        }
+      }
+		}
 	}
 </script>
 
