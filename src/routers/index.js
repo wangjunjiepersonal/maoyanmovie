@@ -49,6 +49,15 @@ export default new Router({
 		      name: 'search',
 		      component: () => import(/* webpackChunkName: "about" */ '@/components/Search')
 		    },
+		    {
+		      path: 'detail/:id',
+		      name: 'detail',
+		      components: {
+		      	detail: () => import(/* webpackChunkName: "about" */ '@/views/Movie/detail')
+		      }
+		      
+		      
+		    },
       ]
     },
     {

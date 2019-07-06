@@ -14,6 +14,13 @@ Vue.filter('setWH',(url,arg) => {
 	return url.replace(/w\.h/,arg)
 })
 
+//全局组件Bscroll
+import Scroll from '@/components/Scroll'
+Vue.component('Scroll',Scroll)
+
+//全局组件Loading
+import Loading from '@/components/Loading'
+Vue.component('Loading',Loading)
 
 new Vue({
   router,

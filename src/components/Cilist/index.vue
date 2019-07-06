@@ -1,22 +1,24 @@
 <template>
-<div class="cinema_body">
-	<ul>
-		<li v-for="(item,index) in cinemaList" :key="index">
-			<div>
-				<span>{{item.nm}}</span>
-				<span class="q"><span class="price">{{item.sellPrice}}</span> 元起</span>
-			</div>
-			<div class="address">
-				<span>{{item.address}}</span>
-				<span>{{item.distance}}km</span>
-			</div>
-			<div class="card">
-  			<div v-for="(card,key) of item.tag" v-if="card === 1" :key="key" :class="key | calssCard">{{key | formatCard}}</div>
- 					</div>
-		</li>
-		 
-	</ul>
-</div>
+	<div class="cinema_body">
+		<Loading v-if="isLoading"></Loading>
+		<Scroll v-else>
+			<ul>
+				<li v-for="(item,index) in cinemaList" :key="index">
+					<div>
+						<span>{{item.nm}}</span>
+						<span class="q"><span class="price">{{item.sellPrice}}</span> 元起</span>
+					</div>
+					<div class="address">
+						<span>{{item.address}}</span>
+						<span>{{item.distance}}km</span>
+					</div>
+					<div class="card">
+						<div v-for="(card,key) of item.tag" v-if="card === 1" :key="key" :class="key | calssCard">{{key | formatCard}}</div>
+							</div>
+				</li>
+			</ul>
+		</Scroll>
+	</div>
 </template>
 
 <script>
@@ -24,18 +26,29 @@
 		name:'cilist',
 		data(){
 			return{
-				cinemaList:[]
+				cinemaList:[],
+				isLoading:true,
+				prevCityId:-1
 			}
 		},
-		created(){
+		activated(){
 			this.getList()
 		},
 		methods:{
+			//请求城市的影院
 			getList(){
-				this.axios.get('/api/cinemaList?cityId=10').then(res => {
+				//用来判断是否切换了城市的ID
+				let cityId = this.$store.state.city.id
+				if (this.prevCityId === cityId) {
+					return 
+				}
+				this.isLoading = true
+				this.axios.get(`/api/cinemaList?cityId=${cityId}`).then(res => {
 					let msg = res.data.msg
 					if (msg === 'ok') {
 						this.cinemaList = res.data.data.cinemas
+						this.prevCityId = cityId
+						this.isLoading = false
 					}
 				})
 			}
@@ -74,8 +87,8 @@
 </script>
 
 <style scoped="scoped">
-	#content .cinema_body{ flex:1; overflow:auto;}
-	.cinema_body ul{ padding:20px;}
+	#content .cinema_body{ flex:1; overflow:auto;height: 517px;}
+	.cinema_body ul{ padding:20px; overflow: hidden;}
 	.cinema_body li{  border-bottom:1px solid #e6e6e6; margin-bottom: 20px;}
 	.cinema_body div{ margin-bottom: 10px;}
 	.cinema_body .q{ font-size: 11px; color:#f03d37;}
@@ -86,5 +99,7 @@
 	.cinema_body .card div{ padding: 0 3px; height: 15px; line-height: 15px; border-radius: 2px; color: #f90; border: 1px solid #f90; font-size: 13px; margin-right: 5px;}
 	.cinema_body .card div.or{ color: #f90; border: 1px solid #f90;}
 	.cinema_body .card div.bl{ color: #589daf; border: 1px solid #589daf;}
-
+	.wrapper{
+		height:100%;
+	}
 </style>

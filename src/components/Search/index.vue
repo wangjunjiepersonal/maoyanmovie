@@ -35,10 +35,11 @@
 		},
 		watch:{
 			message(newval){
+				let cityId = this.$store.state.city.id
 				//函数防抖
 				this.cancelRequest()
 				var that = this
-				this.axios.get(`/api/searchList?cityId=10&kw=${newval}`,{
+				this.axios.get(`/api/searchList?cityId=${cityId}&kw=${newval}`,{
           cancelToken: new this.axios.CancelToken(function(c){
               that.source = c;
           })

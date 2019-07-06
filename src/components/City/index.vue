@@ -1,21 +1,25 @@
 <template>
 	<div class="city_body">
 		<div class="city_list">
-			<div class="city_hot">
-				<h2>热门城市</h2>
-				<ul class="clearfix">
-					<li v-for="(item,index) in hotList">{{item.nm}}</li>
-				</ul>
-			</div>
-			<div class="city_sort" ref="city_sort">
-				<div v-for="(item,index) in cityList" :key="index">
-					<h2>{{item.index}}</h2>
-					<ul>
-						<li v-for="(items,i) in item.list" :key="i">{{items.nm}}</li>
-					</ul>
+			<Loading v-if="isLoading"></Loading>
+			<Scroll v-else ref="city_list">
+				<div>
+					<div class="city_hot">
+						<h2>热门城市</h2>
+						<ul class="clearfix">
+							<li v-for="(item,index) in hotList" @tap="handleToCity(item)">{{item.nm}}</li>
+						</ul>
+					</div>
+					<div class="city_sort" ref="city_sort">
+						<div v-for="(item,index) in cityList" :key="index">
+							<h2>{{item.index}}</h2>
+							<ul>
+								<li v-for="(items,i) in item.list" :key="i" @tap="handleToCity(items)">{{items.nm}}</li>
+							</ul>
+						</div>
+					</div>
 				</div>
-					
-			</div>
+			</Scroll>
 		</div>
 		<div class="city_index">
 			<ul>
@@ -31,11 +35,20 @@
 		data(){
 			return{
 				cityList : [],
-				hotList : []
+				hotList : [],
+				isLoading:true
 			}
 		},
 		created(){
-			this.getList()
+			let cityList = window.localStorage.getItem('cityList')
+			let hotList = window.localStorage.getItem('hotList')
+			if (cityList && hotList) {
+				this.cityList = JSON.parse(cityList)
+				this.hotList = JSON.parse(hotList)
+				this.isLoading = false
+			}else {
+				this.getList()
+			}
 		},
 		methods:{
 			//获取数据
@@ -43,10 +56,13 @@
 				this.axios.get('/api/cityList')	.then(res => {
 				let msg = res.data.msg
 				if (msg === 'ok') {
+					this.isLoading = false
 					let data = res.data.data.cities
 					let {cityList,hotList} = this.formatCityList(data)
 					this.cityList = cityList
 					this.hotList = hotList
+					window.localStorage.setItem('cityList',JSON.stringify(cityList))
+					window.localStorage.setItem('hotList',JSON.stringify(hotList))
 				}
 			})
 			},
@@ -107,8 +123,16 @@
 			//点击右侧字母跳转
 			handleToindex(index){
 				let h2 = this.$refs.city_sort.getElementsByTagName('h2')
-				this.$refs.city_sort.parentNode.scrollTop = h2[index].offsetTop
+//				this.$refs.city_sort.parentNode.scrollTop = 
+				this.$refs.city_list.ToScrollTop(-h2[index].offsetTop)
 			},
+			//点击选择城市
+			handleToCity(item){
+				this.$store.commit('CITY_INFO',item)
+				window.localStorage.setItem('nowNm',item.nm)
+				window.localStorage.setItem('nowId',item.id)
+				this.$router.push('/movie/nowplaying')
+			}
 		}
 	}
 </script>

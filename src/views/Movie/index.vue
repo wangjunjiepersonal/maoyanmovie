@@ -7,7 +7,7 @@
 			<!--二级路由导航-->
 			<div class="movie_menu">
 				<router-link to="/movie/city" tag="div" class="city_name">
-					<span>大连</span><i class="iconfont icon-lower-triangle"></i>
+					<span>{{$store.state.city.nm}}</span><i class="iconfont icon-lower-triangle"></i>
 				</router-link>
 				<div class="hot_swtich">
 					<router-link to="/movie/nowplaying" tag="div"  class="hot_item">正在热映</router-link>
@@ -23,15 +23,48 @@
 		</div>
 		<!--底部-->
 		<TabBar></TabBar>
+		<router-view name="detail" />
 	</div>
 </template>
 
 <script>
 	import Header from '@/components/Header'
 	import TabBar from '@/components/TabBar'
+	import {messageBox} from '@/components/js'
 	
 	export default {
 		name:'Movie',
+		mounted(){
+			this.getAddress()
+		},
+		methods:{
+			getAddress(){
+				setTimeout(() => {
+					this.axios.get('/api/getLocation').then(res => {
+						let msg = res.data.msg
+						if (msg === 'ok') {
+							let nm = res.data.data.nm
+							let id = res.data.data.id
+							if (this.$store.state.city.id == id) {
+								return
+							}
+							
+							messageBox({
+								title:'定位',
+								content:nm,
+								cancel:'取消',
+								ok:'切换定位',
+								handleOk(){
+									window.localStorage.setItem('nowNm',nm)
+									window.localStorage.setItem('nowId',id)
+									window.location.reload()
+								},
+							})
+						}
+					})
+				},2000)
+			}
+		},
 		components:{
 			Header,
 			TabBar
